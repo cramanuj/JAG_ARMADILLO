@@ -1,0 +1,3 @@
+jaguar_ARMA.cpp is the RcppArmadillo file with c++ code to compute the joint score test statistic and the corresponding p-value. 
+
+testJAG.R is the R script that can be run to test the above code. The R file runs power simulations.
