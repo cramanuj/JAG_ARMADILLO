@@ -24,5 +24,5 @@ X = as.matrix(X[,c((nobs+1):(nobs+k))])
 
 ## Benchmarking
 cols = c("test","replications","elapsed","relative")
-benchmark(jaguar(est.eps,est.tau,k_new,Ynew,snp,R), jagARMA(Yhat,k_new,snpC,est.eps,est.tau),columns=cols,replications=10000)
+benchmark(jaguar(est.eps,est.tau,k_new,Ynew,snp,R), jagARMA(Yhat,k_new,snpC,X,est.eps,est.tau),columns=cols,replications=10000)
 
