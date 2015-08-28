@@ -12,7 +12,7 @@ for(i in 1:length(lib.list)){
 			library(lib.list[i],character.only=T)};
 }
 
-sourceCpp("jaguar_ARMA.cpp")
+sourceCpp("/dscrgrps/igsp1/ca31/Rcpp_Arma_Examples/jaguar_ARMA.cpp")
 
 main = function(nobs = 100, k = 5,tau = 1, eps = 1,PVEg = 0,bta = 0,maf = 0.10,miss_ind=25,miss_k=25){
 	
@@ -56,6 +56,6 @@ main = function(nobs = 100, k = 5,tau = 1, eps = 1,PVEg = 0,bta = 0,maf = 0.10,m
 main()
 
 ## Power simulation
-nsim=500
+nsim=1000
 power = rlply(nsim,main(nobs=100,PVEg=0,bta=0),.progress="time")
 sum(power<=0.05)/nsim
