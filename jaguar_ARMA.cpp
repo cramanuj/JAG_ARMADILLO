@@ -34,7 +34,7 @@ using namespace std;
 
 // [[Rcpp::export]]
 
-SEXP jagARMA(const arma::mat Yhat, arma::vec k, arma::vec snp, const arma::mat X, double Eps, double Tau){
+SEXP jagARMA(const arma::mat Yhat, const arma::vec k, const arma::vec snp, const arma::mat X, double Eps, double Tau){
 	
 	// Initialize the parameters
 	int ksum = sum(k); int kmax = max(k); int nobs = snp.size();
@@ -63,8 +63,8 @@ SEXP jagARMA(const arma::mat Yhat, arma::vec k, arma::vec snp, const arma::mat X
 	}
 	
   const arma::mat tG = trans(G); const arma::mat tX = trans(X);
-	const arma::mat GGt = G*trans(G);
-	const arma::mat XXt = X*trans(X);
+	const arma::mat GGt = G*tG;
+	const arma::mat XXt = X*tX;
 	
 	// Compute variance-cov matrix and the optimal weights
 
