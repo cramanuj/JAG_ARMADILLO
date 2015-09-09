@@ -35,7 +35,7 @@ using namespace std;
 // [[Rcpp::export]]
 
 SEXP jagARMA(const arma::mat Yhat, const arma::vec k, const arma::vec snp, const arma::mat X, double Eps, double Tau){
-	
+  
 	// Initialize the parameters
 	int ksum = sum(k); int kmax = max(k); int nobs = snp.size();
 	arma::mat iV(ksum,ksum);				// V^{-1} variance-cov matrix of Y
@@ -62,8 +62,6 @@ SEXP jagARMA(const arma::mat Yhat, const arma::vec k, const arma::vec snp, const
 		row_st = col_st = col_end;
 	}
 	const arma::mat tG = trans(G); const arma::mat tX = trans(X);
-	const arma::mat GGt = G*tG;
-	const arma::mat XXt = X*tX;
 	
 	// Compute variance-cov matrix and the optimal weights
 
@@ -71,14 +69,14 @@ SEXP jagARMA(const arma::mat Yhat, const arma::vec k, const arma::vec snp, const
 	double meanG = 0.5 * trace(tX*iV*X);
 	double varB = 2 * trace(tG*iV*G*tG*iV*G);
 	double varG = 0.5 * trace(tX*iV*X*tX*iV*X);
-	double cov = trace(iV*GGt*iV*XXt);
+	double cov = trace(tG*iV*X*tX*iV*G);
 	double a_gam = (varB-cov)/(varB+varG-2*cov); 
 	double a_beta = (varG-cov)/(varB+varG-2*cov);
 
 	// Compute the score test statistic and the corresponding p-value using
 	// Satterthwaite method
 	
-	const arma::mat U_psi = trans(Yhat)*iV*( (a_beta*GGt) + (0.5*a_gam*XXt) )*iV*Yhat;
+	const arma::mat U_psi = trans(Yhat)*iV*( (a_beta*G*tG) + (0.5*a_gam*X*tX) )*iV*Yhat;
 	double meanPSI = (a_beta*meanB)+ (a_gam*meanG);
 	double varPSI = (a_beta*varB*a_beta) + (a_gam*a_gam*varG);
 	double a1 = varPSI/(2*meanPSI);

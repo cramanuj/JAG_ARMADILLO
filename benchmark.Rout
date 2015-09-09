@@ -72,9 +72,9 @@ Loading required package: Matrix
 > cols = c("test","replications","elapsed","relative")
 > benchmark(jaguar(eps,tau,k_new,YnewU,snp,R), jagARMA(Yhat,k_new,snp,X,eps,tau),columns=cols,replications=1000)
                                     test replications elapsed relative
-2 jagARMA(Yhat, k_new, snp, X, eps, tau)         1000  96.985  650.906
-1 jaguar(eps, tau, k_new, YnewU, snp, R)         1000   0.149    1.000
+2 jagARMA(Yhat, k_new, snp, X, eps, tau)         1000   5.652   34.463
+1 jaguar(eps, tau, k_new, YnewU, snp, R)         1000   0.164    1.000
 > 
 > proc.time()
    user  system elapsed 
-103.124   3.301 110.200 
+ 15.542   2.366  20.883 
