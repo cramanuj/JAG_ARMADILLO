@@ -1,3 +1,9 @@
-jaguar_ARMA.cpp is the RcppArmadillo file with c++ code to compute the joint score test statistic and the corresponding p-value. 
+1) jaguar_ARMA.cpp -- c++ code to compute the joint score test statistic and the corresponding p-value using RcppArmadillo template.
 
-testJAG.R is the R script that can be run to test the above code. The R file runs power simulations.
+2) testJAG.R -- R script that can be run to test the above code. The R file runs power simulations.
+
+3) jaguar.cpp -- c++ code to compute the joint score test statistic and the corresponding p-value following the closed-form solution using Rcpp template.
+
+4) benchmark.R -- R script benchmarking two solutions a) RcppArmadillo, and b) Rcpp closed-form solution 
+
+All .Rout files have executed R codes.
