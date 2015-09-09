@@ -2,6 +2,8 @@
 ### Chaitanya Acharya
 ### Aug 27, 2015
 
+## Updated: Sep 9, 2015
+
 
 lib.list=c("lme4","plyr","Rcpp","RcppArmadillo")
 for(i in 1:length(lib.list)){
@@ -13,6 +15,7 @@ for(i in 1:length(lib.list)){
 }
 
 sourceCpp("jaguar_ARMA.cpp")
+sourceCpp("jaguar.cpp")
 
 main = function(nobs = 100, k = 5,tau = 1, eps = 1,PVEg = 0,bta = 0,maf = 0.10,miss_ind=25,miss_k=25){
 	
@@ -48,14 +51,12 @@ main = function(nobs = 100, k = 5,tau = 1, eps = 1,PVEg = 0,bta = 0,maf = 0.10,m
 	
 ## Extract model components
 	eps = sigma(fit)^2; tau = VarCorr(fit)[[1]][1]
-	return(jagARMA(Yhat, k_new, snp, X, eps, tau))
+	return(c("ARMA"=jagARMA(Yhat, k_new, snp, X, eps, tau),
+			 "Rcpp"=jaguar(eps,tau,k_new,YnewU,snp,R)))
 
 }
 
-## Test the function once
-# main()
+## Testing accuracy
 
-## Power simulation
-nsim=1000
-power = rlply(nsim,main(nobs=100,PVEg=0,bta=0),.progress="time")
-sum(power<=0.05)/nsim
+nsim=10
+rdply(nsim,main(nobs=100,PVEg=0,bta=0),.progress="time",.id=NULL)

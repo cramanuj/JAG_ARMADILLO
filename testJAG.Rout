@@ -1,0 +1,98 @@
+
+R version 3.2.1 (2015-06-18) -- "World-Famous Astronaut"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ### Testing ARMA version of JAGUAR
+> ### Chaitanya Acharya
+> ### Aug 27, 2015
+> 
+> ## Updated: Sep 9, 2015
+> 
+> 
+> lib.list=c("lme4","plyr","Rcpp","RcppArmadillo")
+> for(i in 1:length(lib.list)){
++ 	if(any(installed.packages()[,1]==lib.list[i])){
++ 		library(lib.list[i],character.only=T)}else{
++ 			source("http://bioconductor.org/biocLite.R");
++ 			biocLite(lib.list[i]);
++ 			library(lib.list[i],character.only=T)};
++ }
+Loading required package: Matrix
+> 
+> sourceCpp("jaguar_ARMA.cpp")
+> sourceCpp("jaguar.cpp")
+> 
+> main = function(nobs = 100, k = 5,tau = 1, eps = 1,PVEg = 0,bta = 0,maf = 0.10,miss_ind=25,miss_k=25){
++ 	
++ ## Generate datas
++ 	gamma = ((eps+tau)*PVEg) / (100-PVEg);
++ 	mu = rep(1,k); snp = rbinom(nobs,2,maf);
++ 	bkg = rnorm(k,0,gamma);
++ 	Y = do.call("rbind",lapply(1:nobs,function(i) mu + bta*snp[i] + rnorm(1,0,tau) + bkg*snp[i] + rnorm(k,0,eps)))
++ 
++ ## Simulate missingNESS
++ 	Yu=Y;
++ 	miss_ind = (nobs*miss_ind)/100
++ 	if(miss_ind!=0){
++ 		missOBS = sample(1:nobs,miss_ind,replace=F)
++ 		missK = replicate(length(missOBS),sample(1:k,round(miss_k*k/100),replace=F),simplify=F)
++ 		missV = cbind(rep(missOBS,each=round(miss_k*k/100)),as.vector(replicate(length(missOBS),sample(1:k,round(miss_k*k/100),replace=F),simplify=T)))
++ 		Yu[missV]<-NA
++ 	}
++ 	
++ 	snp = snp-mean(snp)
++ 	dataU = data.frame("IND"=as.factor(rep(1:nobs,each=k)),"Gene"=as.vector(t(Yu)),"Geno" = rep(snp,each=k),"Tissue"=as.factor(rep(1:k,nobs)))
++ 	k_new = k - (apply(Yu,1,function(x) sum(is.na(x))))
++ 	R = 1 - t(apply(is.na(Yu),1,as.numeric));
++ 	YnewU = apply(Yu,1,function(x) x-colMeans(Yu,na.rm=T));
++ 	YnewU[is.na(YnewU)]<-0
++ 	Yhat = as.matrix(YnewU[YnewU!=0])
++ 	R_tmp = R * snp; R_tmp = split(R_tmp,1:NROW(R_tmp));
++ 	X = ldply(R_tmp,function(x) x*diag(length(x)),.id=NULL)
++ 	X = as.matrix(X[which(apply(X,1,sum)!=0),])
++ 
++ ## Fit the model under the global null (H0: bta = gamma =0)
++ 	fit = lmer(Gene~0+Tissue+(1|IND),dataU,REML=F)
++ 	
++ ## Extract model components
++ 	eps = sigma(fit)^2; tau = VarCorr(fit)[[1]][1]
++ 	return(c("ARMA"=jagARMA(Yhat, k_new, snp, X, eps, tau),
++ 			 "Rcpp"=jaguar(eps,tau,k_new,YnewU,snp,R)))
++ 
++ }
+> 
+> ## Testing accuracy
+> 
+> nsim=10
+> rdply(nsim,main(nobs=100,PVEg=0,bta=0),.progress="time",.id=NULL)
+|                                                    |  0%                      |=====                                               | 10% ~3 s remaining       |==========                                          | 20% ~2 s remaining       |===============                                     | 30% ~2 s remaining       |====================                                | 40% ~2 s remaining       |==========================                          | 50% ~1 s remaining       |===============================                     | 60% ~1 s remaining       |====================================                | 70% ~1 s remaining       |=========================================           | 80% ~1 s remaining       |==============================================      | 90% ~0 s remaining       |====================================================|100% ~0 s remaining       |====================================================|100%                      Completed after 3 s 
+        ARMA      Rcpp
+1  0.4404797 0.4404797
+2  0.3997182 0.3997182
+3  0.2130307 0.2130307
+4  0.2060317 0.2060317
+5  0.8474697 0.8474697
+6  0.3425296 0.3425296
+7  0.4324396 0.4324396
+8  0.3743794 0.3743794
+9  0.4643059 0.4643059
+10 0.6713707 0.6713707
+> 
+> proc.time()
+   user  system elapsed 
+ 12.827   1.063  15.439 

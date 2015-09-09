@@ -38,8 +38,8 @@ SEXP jagARMA(const arma::mat Yhat, const arma::vec k, const arma::vec snp, const
 	
 	// Initialize the parameters
 	int ksum = sum(k); int kmax = max(k); int nobs = snp.size();
-	arma::mat iV(ksum,ksum);		// V^{-1} variance-cov matrix of Y
-	arma::mat G(ksum,1);			// G matrix (function of mean-centered genotypes)
+	arma::mat iV(ksum,ksum);				// V^{-1} variance-cov matrix of Y
+	arma::mat G(ksum,1);					// G matrix (function of mean-centered genotypes)
 	iV.fill(0);  G.fill(0);
 
 	int row_st=0; int col_st=0; int row_end=0; int col_end=0; int nt = 0;
@@ -61,8 +61,7 @@ SEXP jagARMA(const arma::mat Yhat, const arma::vec k, const arma::vec snp, const
 		iV.submat(row_st,col_st,row_end-1,col_end-1)=id_iV;
 		row_st = col_st = col_end;
 	}
-	
-  const arma::mat tG = trans(G); const arma::mat tX = trans(X);
+	const arma::mat tG = trans(G); const arma::mat tX = trans(X);
 	const arma::mat GGt = G*tG;
 	const arma::mat XXt = X*tX;
 	
@@ -86,6 +85,4 @@ SEXP jagARMA(const arma::mat Yhat, const arma::vec k, const arma::vec snp, const
 	double a2 = (2*meanPSI*meanPSI)/varPSI;
 	double scaled_upsi = U_psi(0,0) / a1;
 	return wrap(1 - R::pchisq(scaled_upsi,a2,1,0));
-//	return R_NilValue;
-	
 }

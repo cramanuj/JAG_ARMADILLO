@@ -1,28 +1,53 @@
-library(lme4); library(Rcpp); library(RcppArmadillo); library(plyr); library(rbenchmark)
+lib.list=c("lme4","Rcpp","RcppArmadillo","plyr","rbenchmark")
+for(i in 1:length(lib.list)){
+	if(any(installed.packages()[,1]==lib.list[i])){
+		library(lib.list[i],character.only=T)}else{
+			source("http://bioconductor.org/biocLite.R");
+			biocLite(lib.list[i]);
+			library(lib.list[i],character.only=T)};
+}
 
+## Load the cpp programs
 sourceCpp("jaguar.cpp")
 sourceCpp("jaguar_ARMA.cpp")
 
-nobs = 3; k = 3;tau = 1;eps = 1;PVEg = 0;bta = 0;maf = 0.10;
-snp = c(1,1,2)	
-snpC = snp-mean(snp)
-gamma = ((eps+tau)*PVEg) / (100-PVEg); mu = rep(1,k); bkg = rnorm(k,0,gamma);
+## Initiate parameters
+nobs = 100; k = 4;tau = 1;eps = 1;PVEg = 0;bta = 0;maf = 0.10;
+miss_ind = 25; miss_k = 25;
+
+## Generate datas
+gamma = ((eps+tau)*PVEg) / (100-PVEg);
+mu = rep(1,k); snp = rbinom(nobs,2,maf);
+bkg = rnorm(k,0,gamma);
 Y = do.call("rbind",lapply(1:nobs,function(i) mu + bta*snp[i] + rnorm(1,0,tau) + bkg*snp[i] + rnorm(k,0,eps)))
-Y[2,1] = Y[3,3] <- NA
+
+## Simulate missingNESS
+miss_ind = (nobs*miss_ind)/100
+if(miss_ind!=0){
+	missOBS = sample(1:nobs,miss_ind,replace=F)
+	missK = replicate(length(missOBS),sample(1:k,round(miss_k*k/100),replace=F),simplify=F)
+	missV = cbind(rep(missOBS,each=round(miss_k*k/100)),as.vector(replicate(length(missOBS),sample(1:k,round(miss_k*k/100),replace=F),simplify=T)))
+	Y[missV]<-NA
+}
+
+## Simulate data
+snp = snp-mean(snp)
+dataU = data.frame("IND"=as.factor(rep(1:nobs,each=k)),"Gene"=as.vector(t(Y)),"Geno" = rep(snp,each=k),"Tissue"=as.factor(rep(1:k,nobs)))
 k_new = k - (apply(Y,1,function(x) sum(is.na(x))))
 R = 1 - t(apply(is.na(Y),1,as.numeric));
-data = data.frame("IND"=as.factor(rep(1:nobs,each=k)),"Gene"=as.vector(t(Y)),"Geno" = rep(snpC,each=k),"Tissue"=as.factor(rep(1:k,nobs)))
-Ynew = apply(Y,1,function(x) x-colMeans(Y,na.rm=T));
-Ynew[is.na(Ynew)]<-0
-Yhat = as.matrix(Ynew[Ynew!=0])
+YnewU = apply(Y,1,function(x) x-colMeans(Y,na.rm=T));
+YnewU[is.na(YnewU)]<-0
+Yhat = as.matrix(YnewU[YnewU!=0])
+R_tmp = R * snp; R_tmp = split(R_tmp,1:NROW(R_tmp));
+X = ldply(R_tmp,function(x) x*diag(length(x)),.id=NULL)
+X = as.matrix(X[which(apply(X,1,sum)!=0),])
 
 ## Fit the model under the global null (H0: bta = gamma =0)
-fit_null = lmer(Gene~0+Tissue+(1|IND),data,REML=F)	
-est.eps = sigma(fit_null)^2; est.tau = VarCorr(fit_null)[[1]][1]
-X = getME(lmer(Gene~0+Tissue+(1|IND)+(0+Geno|Tissue),data,REML=F),"Z"); 
-X = as.matrix(X[,c((nobs+1):(nobs+k))])
+fit = lmer(Gene~0+Tissue+(1|IND),dataU,REML=F)
+
+## Extract model components
+eps = sigma(fit)^2; tau = VarCorr(fit)[[1]][1]
 
 ## Benchmarking
 cols = c("test","replications","elapsed","relative")
-benchmark(jaguar(est.eps,est.tau,k_new,Ynew,snp,R), jagARMA(Yhat,k_new,snpC,X,est.eps,est.tau),columns=cols,replications=10000)
-
+benchmark(jaguar(eps,tau,k_new,YnewU,snp,R), jagARMA(Yhat,k_new,snp,X,eps,tau),columns=cols,replications=1000)
