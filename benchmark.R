@@ -55,4 +55,9 @@ benchmark(jaguarNEW(eps,tau,k_new,YnewU,snp,R),
 		      jaguar_ARMA(Yhat,k_new,snp,X,eps,tau),
 		      jaguar_BALANCED(eps,tau,k,YnewU,snp),columns=cols,replications=1000)
 
+## System information/configuration
 
+system("cat /proc/cpuinfo | grep 'model name' | uniq")
+system("lscpu")
+
+sessionInfo()

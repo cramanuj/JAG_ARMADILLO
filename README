@@ -19,8 +19,9 @@ c) jaguar_NEW --
 
 2) jaguar.cpp -- c++ function to compute the joint score test statistic and the corresponding p-value following the closed-form solution using Rcpp template. Compared to "jaguar_NEW", it is slightly inefficient. 
 
-3) testJAG.R -- R script that can be run to test the above code. The R file runs power simulations.
+3) testJAG.R -- R script to test the accuracy of jaguar_NEW(), jaguar() and jaguar_ARMA() functions. All these functions MUST provide the same answer with the same accuracy. 
 
-4) benchmark.R -- R script benchmarking two solutions a) RcppArmadillo, and b) Rcpp closed-form solution 
+4) benchmark.R -- R script benchmarking functions jaguar_NEW(), jaguar_ARMA() and jaguar().
+Data is generated for 150 observations with 10 tissues. 
 
 All .Rout files have executed R codes.

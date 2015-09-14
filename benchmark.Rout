@@ -32,7 +32,7 @@ Loading required package: Matrix
 > sourceCpp("jaguar_ARMA.cpp")
 > 
 > ## Initiate parameters
-> nobs = 100; k = 4;tau = 1;eps = 1;PVEg = 0;bta = 0;maf = 0.10;
+> nobs = 150; k = 10;tau = 1;eps = 1;PVEg = 0;bta = 0;maf = 0.10;
 > miss_ind = 25; miss_k = 25;
 > 
 > ## Generate datas
@@ -70,11 +70,70 @@ Loading required package: Matrix
 > 
 > ## Benchmarking
 > cols = c("test","replications","elapsed","relative")
-> benchmark(jaguar(eps,tau,k_new,YnewU,snp,R), jagARMA(Yhat,k_new,snp,X,eps,tau),columns=cols,replications=1000)
-                                    test replications elapsed relative
-2 jagARMA(Yhat, k_new, snp, X, eps, tau)         1000   5.652   34.463
-1 jaguar(eps, tau, k_new, YnewU, snp, R)         1000   0.164    1.000
+> benchmark(jaguarNEW(eps,tau,k_new,YnewU,snp,R),
++ 		      jaguar(eps,tau,k_new,YnewU,snp,R), 
++ 		      jaguar_ARMA(Yhat,k_new,snp,X,eps,tau),
++ 		      jaguar_BALANCED(eps,tau,k,YnewU,snp),columns=cols,replications=1000)
+                                        test replications elapsed relative
+3 jaguar_ARMA(Yhat, k_new, snp, X, eps, tau)         1000 175.299 3729.766
+4   jaguar_BALANCED(eps, tau, k, YnewU, snp)         1000   0.047    1.000
+2     jaguar(eps, tau, k_new, YnewU, snp, R)         1000   0.535   11.383
+1  jaguarNEW(eps, tau, k_new, YnewU, snp, R)         1000   0.246    5.234
+> 
+> 
+> ## System information/configuration
+> 
+> system("cat /proc/cpuinfo | grep 'model name' | uniq")
+model name	: Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+> system("lscpu")
+Architecture:          x86_64
+CPU op-mode(s):        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU(s):                2
+On-line CPU(s) list:   0,1
+Thread(s) per core:    1
+Core(s) per socket:    1
+Socket(s):             2
+NUMA node(s):          1
+Vendor ID:             GenuineIntel
+CPU family:            6
+Model:                 26
+Stepping:              4
+CPU MHz:               2700.000
+BogoMIPS:              5400.00
+Hypervisor vendor:     VMware
+Virtualization type:   full
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              256K
+L3 cache:              30720K
+NUMA node0 CPU(s):     0,1
+> 
+> sessionInfo()
+R version 3.2.1 (2015-06-18)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+Running under: Red Hat Enterprise Linux Server release 6.7 (Santiago)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] rbenchmark_1.0.0          plyr_1.8.3               
+[3] RcppArmadillo_0.5.400.2.0 Rcpp_0.12.0              
+[5] lme4_1.1-9                Matrix_1.2-2             
+
+loaded via a namespace (and not attached):
+[1] minqa_1.2.4     MASS_7.3-44     tools_3.2.1     splines_3.2.1  
+[5] nlme_3.1-122    grid_3.2.1      nloptr_1.0.4    lattice_0.20-33
 > 
 > proc.time()
    user  system elapsed 
- 15.542   2.366  20.883 
+121.794  44.945 199.090 
