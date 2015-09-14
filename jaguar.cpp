@@ -49,7 +49,7 @@ NumericMatrix addMat(NumericMatrix x, NumericMatrix y){
 
 // [[Rcpp::export]]
 
-SEXP jaguar(double Eps, double Tau, NumericVector k, NumericMatrix Y, NumericVector snp, NumericMatrix R){	
+double jaguar(double Eps, double Tau, NumericVector k, NumericMatrix Y, NumericVector snp, NumericMatrix R){	
 	
 	double nobs = Y.ncol();
 	double mG = mean(snp);
@@ -120,6 +120,27 @@ SEXP jaguar(double Eps, double Tau, NumericVector k, NumericMatrix Y, NumericVec
 	double scaled_upsi = Upsi/a1;
 	double jag_pval = 1 - R::pchisq(scaled_upsi,a2,1,0);
 	if(jag_pval==0) jag_pval = 2e-16;
-	return wrap(jag_pval);
+	return jag_pval;
 }
 
+// [[Rcpp::export]]
+NumericMatrix GENEapply(NumericMatrix geno, List Y, NumericVector Eps, NumericVector Tau, NumericVector k, NumericMatrix R){
+	
+	int ngenes = Y.size();
+	int nsnps = geno.nrow();
+	NumericMatrix GENEout_pval(ngenes,nsnps);
+	NumericVector SNPout_pval(nsnps);
+	for(int i =0; i<ngenes; i++){
+		Rcpp::checkUserInterrupt();
+    Rcpp:Rcout<<"Processing gene "<<i+1<<endl;
+		NumericMatrix Ymat = Y[i];
+		double est_eps = Eps[i];
+		double est_tau = Tau[i];
+		for(int j=0; j<nsnps; j++){
+			Rcpp::checkUserInterrupt();
+			SNPout_pval[j] = jaguar(est_eps,est_tau,k,Ymat,geno(j,_),R);
+		}
+		GENEout_pval(i,_) = SNPout_pval;
+	}
+	return wrap( GENEout_pval );
+}

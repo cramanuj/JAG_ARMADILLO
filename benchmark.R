@@ -12,7 +12,7 @@ sourceCpp("jaguar.cpp")
 sourceCpp("jaguar_ARMA.cpp")
 
 ## Initiate parameters
-nobs = 100; k = 4;tau = 1;eps = 1;PVEg = 0;bta = 0;maf = 0.10;
+nobs = 150; k = 10;tau = 1;eps = 1;PVEg = 0;bta = 0;maf = 0.10;
 miss_ind = 25; miss_k = 25;
 
 ## Generate datas
@@ -50,4 +50,9 @@ eps = sigma(fit)^2; tau = VarCorr(fit)[[1]][1]
 
 ## Benchmarking
 cols = c("test","replications","elapsed","relative")
-benchmark(jaguar(eps,tau,k_new,YnewU,snp,R), jagARMA(Yhat,k_new,snp,X,eps,tau),columns=cols,replications=1000)
+benchmark(jaguarNEW(eps,tau,k_new,YnewU,snp,R),
+		      jaguar(eps,tau,k_new,YnewU,snp,R), 
+		      jaguar_ARMA(Yhat,k_new,snp,X,eps,tau),
+		      jaguar_BALANCED(eps,tau,k,YnewU,snp),columns=cols,replications=1000)
+
+

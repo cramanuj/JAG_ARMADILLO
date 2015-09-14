@@ -2,8 +2,7 @@
 ### Chaitanya Acharya
 ### Aug 27, 2015
 
-## Updated: Sep 9, 2015
-
+## Updated: Sep 14, 2015
 
 lib.list=c("lme4","plyr","Rcpp","RcppArmadillo")
 for(i in 1:length(lib.list)){
@@ -51,9 +50,9 @@ main = function(nobs = 100, k = 5,tau = 1, eps = 1,PVEg = 0,bta = 0,maf = 0.10,m
 	
 ## Extract model components
 	eps = sigma(fit)^2; tau = VarCorr(fit)[[1]][1]
-	return(c("ARMA"=jagARMA(Yhat, k_new, snp, X, eps, tau),
-			 "Rcpp"=jaguar(eps,tau,k_new,YnewU,snp,R)))
-
+	return(c("ARMA"=jaguar_ARMA(Yhat, k_new, snp, X, eps, tau),
+			    "Rcpp"=jaguar(eps,tau,k_new,YnewU,snp,R),
+          "RcppArma"=jaguarNEW(eps,tau,k_new,YnewU,snp,R)))
 }
 
 ## Testing accuracy

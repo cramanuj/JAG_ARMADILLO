@@ -1,8 +1,25 @@
 1) jaguar_ARMA.cpp -- c++ code to compute the joint score test statistic and the corresponding p-value using RcppArmadillo template.
 
-2) testJAG.R -- R script that can be run to test the above code. The R file runs power simulations.
+This file has the following functions --
 
-3) jaguar.cpp -- c++ code to compute the joint score test statistic and the corresponding p-value following the closed-form solution using Rcpp template.
+a) jaguar_ARMA --
+- Implements our algorithm using Armadillo C++ library and RcppArmadillo template.
+- Involves Matrix multiplication
+- Computationally expensive (at least theoretically speaking)
+
+b) jaguar_BALANCED --
+- Implements our algorithm using Rcpp template
+- Works only on "balanced designs" i.e. equal number of samples in all tissues/groups. 
+- Simulation code
+
+c) jaguar_NEW --
+- Implements our alogorithm using Armadillo C++ library and RcppArmadillo template.
+- Works on all designs (both balanced and unbalanced)
+- Efficient implementation using closed-form solutions
+
+2) jaguar.cpp -- c++ function to compute the joint score test statistic and the corresponding p-value following the closed-form solution using Rcpp template. Compared to "jaguar_NEW", it is slightly inefficient. 
+
+3) testJAG.R -- R script that can be run to test the above code. The R file runs power simulations.
 
 4) benchmark.R -- R script benchmarking two solutions a) RcppArmadillo, and b) Rcpp closed-form solution 
 
